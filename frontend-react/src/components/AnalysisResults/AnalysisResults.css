@@ -1,0 +1,186 @@
+.analysis-results {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(#4CAF50 0% var(--score-percent), #f0f0f0 var(--score-percent) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.score-inner {
+  width: 100px;
+  height: 100px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.pose-name {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.level-badge {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.level-beginner { background: #ff6b6b; color: white; }
+.level-intermediate { background: #ffa726; color: white; }
+.level-advanced { background: #66bb6a; color: white; }
+.level-expert { background: #4CAF50; color: white; }
+
+.confidence {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.quality-metrics {
+  margin: 30px 0;
+}
+
+.quality-metrics h3 {
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.metric-item {
+  background: #f8f9ff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.metric-name {
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.metric-score {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #667eea;
+}
+
+.metric-bar {
+  background: #e0e0e0;
+  border-radius: 10px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.metric-fill {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.feedback-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin: 30px 0;
+}
+
+.strengths h4,
+.improvements h4 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.feedback-item {
+  padding: 12px 15px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.strength-item {
+  background: #e8f5e8;
+  border-left-color: #4CAF50;
+}
+
+.improvement-item {
+  background: #ffebee;
+  border-left-color: #f44336;
+}
+
+.priority-feedback {
+  background: #fff3e0;
+  border: 2px solid #ff9800;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.priority-feedback h4 {
+  margin-bottom: 10px;
+  color: #e65100;
+}
+
+.result-actions {
+  text-align: center;
+  margin-top: 30px;
+}
+
+@media (max-width: 768px) {
+  .analysis-results {
+    padding: 20px;
+  }
+  
+  .pose-name {
+    font-size: 1.5rem;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .feedback-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
