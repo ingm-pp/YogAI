@@ -1,4 +1,419 @@
 .analysis-results {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* En-tête avec image et score */
+.result-header-with-image {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 3rem;
+  align-items: start;
+}
+
+.image-section {
+  text-align: center;
+}
+
+.pose-visualization {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 2px solid #e9ecef;
+}
+
+.landmarks-info {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #e8f5e8;
+  color: #2e7d32;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.score-section {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 1.5rem;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: conic-gradient(#646cff var(--score-percent), #e9ecef 0%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.score-circle::before {
+  content: '';
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background: white;
+  border-radius: 50%;
+}
+
+.score-inner {
+  position: relative;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #646cff;
+}
+
+.pose-name {
+  margin: 0;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.level-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.level-beginner { background: #e3f2fd; color: #1976d2; }
+.level-intermediate { background: #fff3e0; color: #f57c00; }
+.level-advanced { background: #e8f5e8; color: #388e3c; }
+.level-expert { background: #fce4ec; color: #c2185b; }
+
+.confidence {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.detection-summary {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #646cff;
+}
+
+.detection-stats {
+  color: #495057;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+/* Métriques de qualité */
+
+/* Métriques de qualité - Version horizontale compacte */
+.quality-metrics {
+  margin-bottom: 2rem;
+}
+
+.quality-metrics h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+.metrics-grid-horizontal {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* ← 5 colonnes fixes */
+  gap: 0.8rem;
+}
+
+.metric-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #e9ecef;
+  text-align: center;
+  min-height: 160px; /* ← Hauteur réduite */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.metric-card-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.metric-icon {
+  font-size: 1.5rem; /* ← Icônes plus petites */
+}
+
+.metric-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.85rem; /* ← Texte plus compact */
+  line-height: 1.2;
+}
+
+.metric-score {
+  font-size: 1.5rem; /* ← Score plus petit */
+  font-weight: bold;
+  margin: 0.4rem 0;
+  /* Suppression du fond gradient, uniquement la couleur du texte */
+}
+
+.metric-bar {
+  height: 6px; /* ← Barre plus fine */
+  background: #e9ecef;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0.6rem 0;
+}
+
+.metric-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+/* Couleurs des barres selon le score */
+.metric-fill[style*="width: 9"] { 
+  background: linear-gradient(90deg, #10b981, #34d399); 
+}
+
+.metric-fill[style*="width: 8"] { 
+  background: linear-gradient(90deg, #6366f1, #8b5cf6); 
+}
+
+.metric-fill[style*="width: 7"] { 
+  background: linear-gradient(90deg, #f59e0b, #fbbf24); 
+}
+
+.metric-fill[style*="width: 6"] { 
+  background: linear-gradient(90deg, #ef4444, #f97316); 
+}
+
+.metric-fill[style*="width: 0"] { 
+  background: #e9ecef; 
+}
+
+/* Couleurs du texte du score selon la plage */
+.metric-score[data-score-range="90-100"] { 
+  color: #10b981; /* Vert pour excellence */
+}
+
+.metric-score[data-score-range="80-89"] { 
+  color: #6366f1; /* Bleu/violet pour très bon */
+}
+
+.metric-score[data-score-range="70-79"] { 
+  color: #f59e0b; /* Orange/ambre pour bon */
+}
+
+.metric-score[data-score-range="60-69"] { 
+  color: #ef4444; /* Rouge pour moyen */
+}
+
+.metric-score[data-score-range="0-59"] { 
+  color: #666; /* Gris pour faible */
+}
+
+.metric-description {
+  color: #666;
+  font-size: 0.75rem; /* ← Description plus petite */
+  line-height: 1.2;
+  margin-top: 0.4rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* ← Limité à 2 lignes */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 2.4rem; /* ← Hauteur fixe pour l'alignement */
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .metrics-grid-horizontal {
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes sur tablette */
+    gap: 0.6rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .metrics-grid-horizontal {
+    grid-template-columns: repeat(2, 1fr); /* 2 colonnes sur mobile */
+  }
+  
+  .metric-card {
+    padding: 0.8rem;
+    min-height: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid-horizontal {
+    grid-template-columns: 1fr; /* 1 colonne sur très petit mobile */
+    gap: 0.5rem;
+  }
+  
+  .metric-card {
+    min-height: 140px;
+    padding: 0.7rem;
+  }
+  
+  .metric-score {
+    font-size: 1.3rem;
+  }
+}
+
+
+
+/* Feedback section */
+.feedback-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.strengths h4, .improvements h4 {
+  color: #333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.strengths h4 {
+  color: #2e7d32;
+}
+
+.improvements h4 {
+  color: #d32f2f;
+}
+
+.feedback-item {
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  border-radius: 8px;
+  line-height: 1.5;
+}
+
+.strength-item {
+  background: #e8f5e8;
+  border-left: 4px solid #4caf50;
+}
+
+.improvement-item {
+  background: #ffebee;
+  border-left: 4px solid #f44336;
+}
+
+/* Sections supplémentaires */
+.priority-feedback, .angles-section, .exercise-recommendation {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 2rem;
+}
+
+.priority-feedback h4 {
+  color: #ff6f00;
+  margin-bottom: 1rem;
+}
+
+.priority-content {
+  background: #fff3e0;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #ff9800;
+}
+
+.angles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.angle-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.angle-name {
+  color: #495057;
+}
+
+.angle-value {
+  font-weight: bold;
+  color: #646cff;
+}
+
+.exercise-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+.exercise-card h5 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.exercise-details {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Boutons */
+.result-actions {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+  .analysis-results {
+    padding: 1rem;
+  }
+  
+  .result-header-with-image {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .feedback-section {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+
+
+
+
+
+
+/* .analysis-results {
   background: white;
   border-radius: 20px;
   padding: 40px;
@@ -183,4 +598,4 @@
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-}
+} */

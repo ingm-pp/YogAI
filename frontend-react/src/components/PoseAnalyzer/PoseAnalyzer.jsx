@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useRef, useState, useCallback, useEffect } from 'react'
 import { usePoseDetection } from '../../hooks/usePoseDetection'
 import { FileUpload } from '../FileUpload/FileUpload'
 import { MediaDisplay } from '../MediaDisplay/MediaDisplay'
@@ -15,13 +15,13 @@ export function PoseAnalyzer() {
   const {
     isInitialized,
     keypoints,
-    processImage
+    processImage,
+    imageToBase64,
+    POSE_CONNECTIONS // ← Récupérer les connexions
   } = usePoseDetection()
 
-  const canvasRef = useRef()
-
   const handleFileSelect = useCallback(async (file, type) => {
-    console.log('Fichier sélectionné:', file.name, 'Type:', type)
+    console.log('📁 Fichier sélectionné:', file.name)
     setMediaSource(file)
     setMediaType(type)
     setAnalysisResult(null)
@@ -30,21 +30,17 @@ export function PoseAnalyzer() {
     if (type === 'image') {
       const img = new Image()
       img.onload = async () => {
-        console.log('📷 Traitement MediaPipe...')
+        console.log('🖼️ Image chargée, envoi à MediaPipe...')
         const success = await processImage(img)
-        
         if (!success) {
-          setDetectionError('Erreur lors de la détection')
-        } else if (!keypoints || keypoints.length === 0) {
-          setDetectionError('Aucune pose détectée - Essayez une autre image')
+          setDetectionError('Erreur lors de la détection MediaPipe')
         }
       }
       img.src = URL.createObjectURL(file)
     }
-  }, [processImage, keypoints])
+  }, [processImage])
 
   const handleAnalyze = async () => {
-    // VALIDATION SIMPLE COMME PYTHON
     if (!keypoints || keypoints.length === 0) {
       setDetectionError('Aucune pose détectée pour analyse')
       return
@@ -54,25 +50,34 @@ export function PoseAnalyzer() {
     setDetectionError('')
     
     try {
-      const formData = new FormData()
-      formData.append('file', mediaSource)
+      const img = new Image()
+      img.src = URL.createObjectURL(mediaSource)
+      await new Promise((resolve) => { img.onload = resolve })
+      
+      const imageBase64 = imageToBase64(img)
 
-      console.log('📤 Envoi au backend Python...')
+      const payload = {
+        keypoints: keypoints,
+        image: imageBase64
+      }
+
+      console.log('📤 Envoi au backend pour analyse ML...')
       const response = await fetch('http://localhost:5000/analyze', {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify(payload)
       })
 
       if (response.ok) {
         const result = await response.json()
-        console.log('✅ Analyse Python terminée')
         setAnalysisResult(result)
       } else {
-        const errorText = await response.text()
-        throw new Error(errorText || 'Erreur serveur')
+        throw new Error('Erreur serveur lors de l\'analyse')
       }
     } catch (error) {
-      console.error('❌ Erreur analyse:', error)
       setDetectionError('Erreur: ' + error.message)
     } finally {
       setIsAnalyzing(false)
@@ -86,7 +91,6 @@ export function PoseAnalyzer() {
     setDetectionError('')
   }
 
-  // Compteur de points visibles
   const visiblePoints = keypoints ? keypoints.filter(kp => kp.visibility > 0.5).length : 0
 
   return (
@@ -97,21 +101,20 @@ export function PoseAnalyzer() {
       
       {mediaSource && !analysisResult && (
         <div className="media-section">
+          {/* Passer POSE_CONNECTIONS à MediaDisplay */}
           <MediaDisplay 
             mediaSource={mediaSource}
             mediaType={mediaType}
             keypoints={keypoints}
-            canvasRef={canvasRef}
+            POSE_CONNECTIONS={POSE_CONNECTIONS}
           />
           
-          {/* Statut de détection SIMPLE */}
-          {keypoints && keypoints.length > 0 && (
+          {keypoints && keypoints.length > 0 && !detectionError && (
             <div className="detection-status good">
-              ✅ MediaPipe: {visiblePoints} points détectés
+              ✅ {visiblePoints} points détectés - Prêt pour l'analyse
             </div>
           )}
 
-          {/* Message d'erreur */}
           {detectionError && (
             <div className="detection-error">
               ❌ {detectionError}
@@ -121,28 +124,15 @@ export function PoseAnalyzer() {
           <div className="analysis-controls">
             <button 
               onClick={handleAnalyze}
-              disabled={!keypoints || keypoints.length === 0 || isAnalyzing}
+              disabled={!keypoints || keypoints.length === 0 || isAnalyzing || detectionError}
               className="btn-primary analyze-btn"
             >
-              {isAnalyzing ? '🔄 Analyse en cours...' : '📊 Analyser avec Python'}
+              {isAnalyzing ? '🔄 Analyse en cours...' : '📊 Analyser la posture'}
             </button>
-            <button 
-              onClick={handleReset}
-              className="btn-secondary"
-            >
+            <button onClick={handleReset} className="btn-secondary">
               🗑️ Nouvelle image
             </button>
           </div>
-
-          {/* Info debug */}
-          {keypoints && keypoints.length > 0 && (
-            <div className="debug-info">
-              <small>
-                Mode: StaticImageMode=true | Points: {keypoints.length} | 
-                Visibles: {visiblePoints} | Config: model_complexity=2
-              </small>
-            </div>
-          )}
         </div>
       )}
 
@@ -150,16 +140,12 @@ export function PoseAnalyzer() {
         <AnalysisResults 
           result={analysisResult} 
           onNewAnalysis={handleReset}
+          keypoints={keypoints}
+          mediaSource={mediaSource}
+          mediaType={mediaType}
+          POSE_CONNECTIONS={POSE_CONNECTIONS}
         />
-      )}
-
-      {!isInitialized && (
-        <div className="initializing">
-          🔄 Initialisation MediaPipe...
-        </div>
       )}
     </div>
   )
 }
-
-export default PoseAnalyzer

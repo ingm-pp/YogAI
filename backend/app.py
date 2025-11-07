@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import os
 import uuid
+import base64
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 
@@ -16,17 +17,14 @@ from auth import auth_manager
 
 # 🔥 CORRECTION: Importer les modules APRÈS la création de l'app
 try:
-    from pose_estimator import PoseEstimator
     from pose_analyzer_ml import MLAnalyzer
     
     # Initialisation des composants
-    pose_estimator = PoseEstimator()
     pose_analyzer = MLAnalyzer()
     
 except ImportError as e:
     print(f"⚠️ Attention: {e}")
     print("⚠️ Certains modules ne sont pas disponibles, mode démo activé")
-    pose_estimator = None
     pose_analyzer = None
 
 app = Flask(__name__)
@@ -118,15 +116,21 @@ def register():
             'created_at': datetime.utcnow()
         }
         
+        # ✅ APPEL SIMPLIFIÉ
         token, user_id = auth_manager.register_user(email, password, user_data)
+        
+        # ✅ RÉCUPÉRER L'UTILISATEUR COMPLET
+        user = db.find_user_by_id(user_id)
         
         return jsonify({
             'message': 'User registered successfully',
             'token': token,
             'user': {
                 'id': user_id,
-                'email': email,
-                'profile': user_data
+                'email': user['email'],
+                'profile': user.get('profile', {}),
+                # ✅ first_name vient toujours de profile
+                'first_name': user.get('profile', {}).get('first_name', '')
             }
         }), 201
         
@@ -146,6 +150,7 @@ def login():
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
         
+        # ✅ APPEL SIMPLIFIÉ
         token, user_id = auth_manager.login_user(email, password)
         user = db.find_user_by_id(user_id)
         
@@ -155,7 +160,9 @@ def login():
             'user': {
                 'id': user_id,
                 'email': user['email'],
-                'profile': user.get('profile', {})
+                'profile': user.get('profile', {}),
+                # ✅ STRUCTURE COHÉRENTE
+                'first_name': user.get('profile', {}).get('first_name', '')
             }
         })
         
@@ -163,7 +170,7 @@ def login():
         return jsonify({'error': str(e)}), 401
     except Exception as e:
         return jsonify({'error': 'Login failed'}), 500
-
+    
 @app.route('/api/me', methods=['GET'])
 @login_required
 def get_current_user_profile(user):
@@ -173,7 +180,8 @@ def get_current_user_profile(user):
             'id': str(user['_id']),
             'email': user['email'],
             'profile': user.get('profile', {}),
-            'preferences': user.get('preferences', {})
+            'preferences': user.get('preferences', {}),
+            'first_name': user.get('profile', {}).get('first_name', '') 
         }
     })
 
@@ -269,62 +277,56 @@ def get_available_postures(user):
 @app.route('/analyze', methods=['POST'])
 @login_required
 def analyze_pose(user):
-    """Analyse une image de posture yoga"""
+    """Analyse les keypoints MediaPipe envoyés du frontend"""
     try:
-        if request.method == 'OPTIONS':
-            return '????', 200
-
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file uploaded'}), 400
+        data = request.get_json()
         
-        file = request.files['file']
+        # Récupérer les keypoints du frontend
+        keypoints = data.get('keypoints')
+        if not keypoints:
+            return jsonify({'error': 'No keypoints provided'}), 400
         
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+        # Sauvegarder l'image si fournie (optionnel)
+        image_url = None
+        if 'image' in data:
+            # Générer un nom de fichier unique
+            filename = f"{uuid.uuid4()}.jpg"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            # Décoder et sauvegarder l'image base64
+            image_data = data['image'].split(',')[1]  # Enlever le header base64
+            with open(filepath, 'wb') as f:
+                f.write(base64.b64decode(image_data))
+            image_url = f"/uploads/{filename}"
         
-        if file and allowed_file(file.filename):
-            # Génération du nom de fichier unique
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4()}_{filename}"
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
-            file.save(filepath)
-            
-            # Estimation de la pose
-            pose_result = pose_estimator.estimate_pose(filepath)
-            
-            if not pose_result['keypoints']:
-                return jsonify({'error': 'No human pose detected in the image'}), 400
-            
-            # Analyse de la pose
-            analysis_result = pose_analyzer.analyze_pose(pose_result['keypoints'])
-            
-            # Ajout du chemin de l'image annotée
-            analysis_result['annotated_image'] = pose_result.get('image_with_pose')
-            
-            # Sauvegarde dans l'historique utilisateur
-            analysis_record = {
-                'pose_name': analysis_result['pose_name'],
-                'score': analysis_result['score'],
-                'confidence': analysis_result['confidence'],
-                'level': analysis_result.get('level', 'beginner'),
-                'angles': analysis_result.get('angles', {}),
-                'quality_metrics': analysis_result.get('quality_metrics', {}),
-                'feedback': analysis_result.get('feedback', []),
-                'strengths': analysis_result.get('strengths', []),
-                'improvements': analysis_result.get('improvements', []),
-                'priority_feedback': analysis_result.get('priority_feedback', []),
-                'exercise_recommendation': analysis_result.get('exercise_recommendation', {}),
-                'annotated_image': analysis_result.get('annotated_image'),
-                'date': datetime.utcnow()
-            }
-            
-            db.add_pose_analysis(str(user['_id']), analysis_record)
-            analysis_result['saved_to_history'] = True
-            analysis_result['image_url'] = f"/uploads/{unique_filename}"
-            
-            return jsonify(analysis_result)
+        # Analyse des keypoints avec le modèle ML
+        analysis_result = pose_analyzer.analyze_pose(keypoints)
         
-        return jsonify({'error': 'Invalid file type'}), 400
+        # Ajouter l'URL de l'image si sauvegardée
+        if image_url:
+            analysis_result['image_url'] = image_url
+        
+        # Sauvegarde dans l'historique utilisateur
+        analysis_record = {
+            'pose_name': analysis_result['pose_name'],
+            'score': analysis_result['score'],
+            'confidence': analysis_result['confidence'],
+            'level': analysis_result.get('level', 'beginner'),
+            'angles': analysis_result.get('angles', {}),
+            'quality_metrics': analysis_result.get('quality_metrics', {}),
+            'feedback': analysis_result.get('feedback', []),
+            'strengths': analysis_result.get('strengths', []),
+            'improvements': analysis_result.get('improvements', []),
+            'priority_feedback': analysis_result.get('priority_feedback', []),
+            'exercise_recommendation': analysis_result.get('exercise_recommendation', {}),
+            'image_url': image_url,
+            'date': datetime.utcnow()
+        }
+        
+        db.add_pose_analysis(str(user['_id']), analysis_record)
+        analysis_result['saved_to_history'] = True
+        
+        return jsonify(analysis_result)
     
     except Exception as e:
         return jsonify({'error': str(e)}), 500

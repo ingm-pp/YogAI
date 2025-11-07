@@ -38,24 +38,24 @@ class AuthManager:
     
     def register_user(self, email, password, user_data=None):
         """Inscrit un nouvel utilisateur"""
-        # Vérifier si l'utilisateur existe déjà
         if db.find_user_by_email(email):
             raise ValueError("Un utilisateur avec cet email existe déjà")
         
-        # Valider le mot de passe
         if len(password) < 6:
             raise ValueError("Le mot de passe doit contenir au moins 6 caractères")
         
-        # Créer l'utilisateur
+        # ✅ STRUCTURE CLAIRE ET COHÉRENTE
+        user_profile = {
+            'first_name': user_data.get('first_name', '') if user_data else '',
+            'level': 'beginner',
+            'goals': [],
+            'created_at': datetime.utcnow()
+        }
+        
         user = {
             'email': email,
             'hashed_password': self.hash_password(password),
-            'profile': user_data or {
-                'first_name': '',
-                'level': 'beginner',
-                'goals': [],
-                'created_at': datetime.utcnow()
-            },
+            'profile': user_profile,  # ✅ TOUJOURS profile.first_name
             'posture_history': [],
             'preferences': {
                 'language': 'fr',
@@ -66,6 +66,7 @@ class AuthManager:
         user_id = db.create_user(user)
         token = self.create_token(user_id)
         
+        # ✅ RETOURNER UNIQUEMENT L'ID ET LE TOKEN
         return token, user_id
     
     def login_user(self, email, password):
@@ -78,6 +79,8 @@ class AuthManager:
             raise ValueError("Email ou mot de passe incorrect")
         
         token = self.create_token(str(user['_id']))
+        
+        # ✅ RETOURNER UNIQUEMENT L'ID ET LE TOKEN
         return token, str(user['_id'])
 
 # Instance globale d'authentification

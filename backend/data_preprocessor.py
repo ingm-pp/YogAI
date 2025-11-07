@@ -12,7 +12,7 @@ class DataPreprocessor:
         self.pose_estimator = PoseEstimator()
         self.label_encoder = LabelEncoder()
     
-    def extract_features_from_keypoints(self, keypoints):
+    def extract_features_from_keypoints(self, keypoints) -> np.ndarray:
         """
         Extrait les features des keypoints MediaPipe
         """

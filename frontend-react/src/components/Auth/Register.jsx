@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { authAPI } from '../../services/api'
+import { useAuth } from '../../hooks/useAuth'
 import './Register.css'
 
 export function Register({ onToggleMode }) {
@@ -12,6 +12,8 @@ export function Register({ onToggleMode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
+  const { register } = useAuth()
+
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -38,21 +40,10 @@ export function Register({ onToggleMode }) {
     }
 
     try {
-      const response = await authAPI.register(
-        formData.email,
-        formData.password,
-        formData.firstName
-      )
-      
-      // Stocker le token et les données utilisateur
-      localStorage.setItem('auth_token', response.data.token)
-      localStorage.setItem('user_data', JSON.stringify(response.data.user))
-      
-      // Recharger la page pour mettre à jour l'état d'authentification
-      window.location.reload()
-      
+      await register(formData.email, formData.password, formData.firstName)
+      // La redirection est gérée automatiquement par le contexte
     } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de l\'inscription')
+      setError(err.message || 'Erreur lors de l\'inscription')
     } finally {
       setLoading(false)
     }

@@ -6,10 +6,10 @@ cd backend
 start python app.py
 
 echo Starting React frontend...
-cd ../frontend
-start npm start
+cd ../frontend-react
+npm run dev
 
 echo ✅ Applications démarrées!
 echo Backend: http://localhost:5000
-echo Frontend: http://localhost:3000
+echo Frontend:  http://localhost:5173
 pause

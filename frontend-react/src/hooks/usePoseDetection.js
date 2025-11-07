@@ -7,6 +7,15 @@ export function usePoseDetection() {
   const [keypoints, setKeypoints] = useState([])
   const poseRef = useRef()
 
+  // Connexions pour le squelette
+  const POSE_CONNECTIONS = [
+    [0, 1], [1, 2], [2, 3], [3, 7], [0, 4], [4, 5], [5, 6], [6, 8],
+    [9, 10], [11, 12], [11, 13], [13, 15], [15, 17], [15, 19], [15, 21],
+    [17, 19], [12, 14], [14, 16], [16, 18], [16, 20], [16, 22], [18, 20],
+    [11, 23], [12, 24], [23, 24], [23, 25], [25, 27], [27, 29], [29, 31],
+    [31, 27], [24, 26], [26, 28], [28, 30], [30, 32], [32, 28]
+  ]
+
   useEffect(() => {
     const initializePose = async () => {
       try {
@@ -18,19 +27,17 @@ export function usePoseDetection() {
           }
         })
 
-        // CONFIGURATION IDENTIQUE À PYTHON
         pose.setOptions({
-          staticImageMode: true,      // Mode image statique comme Python
-          modelComplexity: 2,         // Identique à Python
-          enableSegmentation: false,  // Identique à Python
-          smoothLandmarks: true,      // Activé comme dans draw_landmarks
-          minDetectionConfidence: 0.5, // Identique à Python
-          minTrackingConfidence: 0.5   // Identique à Python
+          staticImageMode: true,
+          modelComplexity: 1,
+          enableSegmentation: false,
+          smoothLandmarks: false,
+          minDetectionConfidence: 0.7,
+          minTrackingConfidence: 0.7
         })
 
         pose.onResults((results) => {
           if (results.poseLandmarks) {
-            // FORMAT IDENTIQUE À PYTHON
             const formattedKeypoints = results.poseLandmarks.map((landmark, index) => ({
               x: landmark.x,
               y: landmark.y, 
@@ -39,8 +46,7 @@ export function usePoseDetection() {
             }))
             
             setKeypoints(formattedKeypoints)
-            console.log(`✅ ${formattedKeypoints.length} points détectés`)
-            
+            console.log('✅ Keypoints détectés:', formattedKeypoints.length)
           } else {
             setKeypoints([])
             console.log('❌ Aucune pose détectée')
@@ -54,7 +60,6 @@ export function usePoseDetection() {
         
       } catch (error) {
         console.error('❌ Erreur initialisation MediaPipe:', error)
-        setIsInitialized(false)
       }
     }
 
@@ -74,7 +79,7 @@ export function usePoseDetection() {
     }
     
     try {
-      console.log('🎯 Traitement image (mode staticImageMode=true)')
+      console.log('🎯 Traitement image par MediaPipe...')
       await poseRef.current.send({ image: imageElement })
       return true
     } catch (error) {
@@ -83,10 +88,23 @@ export function usePoseDetection() {
     }
   }
 
+  const imageToBase64 = (imageElement) => {
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    canvas.width = imageElement.width
+    canvas.height = imageElement.height
+    ctx.drawImage(imageElement, 0, 0)
+    
+    return canvas.toDataURL('image/jpeg')
+  }
+
   return {
     poseDetector,
     isInitialized,
     keypoints,
-    processImage
+    processImage, 
+    imageToBase64,
+    POSE_CONNECTIONS // ← Export pour MediaDisplay
   }
 }
