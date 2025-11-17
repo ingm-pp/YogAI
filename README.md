@@ -16,17 +16,17 @@ CORS : Configuré pour le frontend
 
 Structure des fichiers:
 
-backend/
-├── app.py              # Application principale Flask
-├── auth.py             # Gestion de l'authentification
-├── database.py         # Abstraction MongoDB
-├── pose_estimator.py   # Détection de poses avec MediaPipe
-├── data_preprocessor.py # Prétraitement des données ML
-├── pose_analyzer_ml.py # Analyse et évaluation des postures
-├── train_model.py      # Entraînement des modèles ML
-├── train_full.py       # Script d'entraînement complet
-├── check_database.py   # Utilitaire de vérification DB
-└── requirements.txt    # Dépendances
+backend/  
+├── app.py              # Application principale Flask  
+├── auth.py             # Gestion de l'authentification  
+├── database.py         # Abstraction MongoDB  
+├── pose_estimator.py   # Détection de poses avec MediaPipe  
+├── data_preprocessor.py # Prétraitement des données ML  
+├── pose_analyzer_ml.py # Analyse et évaluation des postures  
+├── train_model.py      # Entraînement des modèles ML  
+├── train_full.py       # Script d'entraînement complet  
+├── check_database.py   # Utilitaire de vérification DB  
+└── requirements.txt    # Dépendances  
 
 🎯 Fonctionnalités Principales
 1. Authentification & Utilisateurs
