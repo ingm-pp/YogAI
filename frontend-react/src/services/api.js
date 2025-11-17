@@ -65,6 +65,8 @@ export const userAPI = {
   
   updateProfile: (profileData) => 
     api.put('/api/user/profile', profileData),
+
+  clearHistory: () => api.delete('/api/user/history')  
 };
 
 export default api;

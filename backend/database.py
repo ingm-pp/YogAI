@@ -143,5 +143,15 @@ class MongoDB:
             'best_pose': best_session.get('pose_name', 'unknown')
         }
 
+    def delete_sessions_by_user(self, user_id):
+        """Supprime toutes les sessions d'un utilisateur spécifique"""
+        try:
+            result = self.sessions.delete_many({'user_id': user_id})
+            print(f"✅ {result.deleted_count} sessions supprimées pour l'utilisateur {user_id}")
+            return result.deleted_count
+        except Exception as e:
+            print(f"❌ Erreur suppression sessions utilisateur: {e}")
+            return 0
+
 # Instance globale de la base de données
 db = MongoDB()

@@ -94,7 +94,7 @@ class MLAnalyzer:
     
     def _calculate_alignment_score(self, pose_name: str, keypoints: List[Dict], angles: Dict[str, float]) -> float:
         """Calcule le score d'alignement basé sur la posture"""
-        alignment_score = 80.0  # Score de base
+        alignment_score = 50.0  # Score de base
         
         # Logique spécifique par posture
         if pose_name == 'downdog':
@@ -119,7 +119,7 @@ class MLAnalyzer:
     
     def _calculate_stability_score(self, pose_name: str, keypoints: List[Dict]) -> float:
         """Calcule le score de stabilité"""
-        stability_score = 75.0
+        stability_score = 50.0
         
         # Analyser la répartition du poids (simplifié)
         if len(keypoints) > 25:
@@ -137,7 +137,7 @@ class MLAnalyzer:
     
     def _calculate_symmetry_score(self, pose_name: str, keypoints: List[Dict], angles: Dict[str, float]) -> float:
         """Calcule le score de symétrie"""
-        symmetry_score = 85.0
+        symmetry_score = 50.0
         
         # Comparer les angles gauche/droite
         symmetric_pairs = [
@@ -158,13 +158,15 @@ class MLAnalyzer:
     
     def _calculate_range_of_motion_score(self, pose_name: str, angles: Dict[str, float]) -> float:
         """Calcule le score d'amplitude articulaire"""
-        rom_score = 70.0
+        rom_score = 50.0
         
         # Valeurs cibles par posture
         target_ranges = {
             'downdog': {'left_shoulder': 90, 'right_shoulder': 90},
             'warrior2': {'left_knee': 90, 'right_knee': 90},
-            'tree': {'left_hip': 45, 'right_hip': 45}
+            'tree': {'left_hip': 45, 'right_hip': 45},
+            'plank': {'left_hip': 180, 'right_hip': 180, 'left_knee': 180, 'right_knee': 180},
+            'godess': {'left_knee': 90, 'right_knee': 90} # Genoux fléchis à 90°
         }
         
         if pose_name in target_ranges:
@@ -207,16 +209,22 @@ class MLAnalyzer:
     
     def _get_level(self, score: float) -> str:
         """Détermine le niveau de l'utilisateur"""
+        # if score >= 95:
+        #     return "Expert"
+        # elif score >= 90:
+        #     return "Avancé"
+        # elif score >= 80:
+        #     return "Intermédiaire"
+        # elif score >= 60:
+        #     return "Intermédiaire débutant"
+        # else:
+        #     return "Débutant"
         if score >= 90:
-            return "Expert"
-        elif score >= 80:
             return "Avancé"
-        elif score >= 70:
+        elif score >= 80:
             return "Intermédiaire"
-        elif score >= 60:
-            return "Intermédiaire débutant"
         else:
-            return "Débutant"
+            return "Débutant"        
     
     def _generate_detailed_feedback(self, pose_name: str, quality_metrics: Dict[str, float], angles: Dict[str, float]) -> Dict[str, Any]:
         """Génère un feedback détaillé avec points forts et axes d'amélioration"""
@@ -239,9 +247,9 @@ class MLAnalyzer:
         # Identifier les points forts (scores > 80)
         for metric, score in quality_metrics.items():
             metric_name = self._get_metric_display_name(metric)
-            if score >= 80:
+            if score >= 90:
                 feedback['strengths'].append(f"🎯 {metric_name}: Excellente maîtrise ({score:.0f}%)")
-            elif score >= 60:
+            elif score >= 80:
                 feedback['strengths'].append(f"✅ {metric_name}: Correct ({score:.0f}%)")
         
         # Identifier les axes d'amélioration (scores < 70)
@@ -346,35 +354,35 @@ class MLAnalyzer:
             'benefit': "Amélioration globale de la technique"
         })
     
-    def _demo_analysis(self, keypoints: List[Dict], angles: Dict[str, float]) -> Dict[str, Any]:
-        """Analyse de démonstration avec indicateurs simulés"""
-        quality_metrics = {
-            'alignment': 75.0,
-            'stability': 68.0,
-            'symmetry': 82.0,
-            'range_of_motion': 70.0,
-            'technique': 65.0
-        }
+    # def _demo_analysis(self, keypoints: List[Dict], angles: Dict[str, float]) -> Dict[str, Any]:
+    #     """Analyse de démonstration avec indicateurs simulés"""
+    #     quality_metrics = {
+    #         'alignment': 75.0,
+    #         'stability': 68.0,
+    #         'symmetry': 82.0,
+    #         'range_of_motion': 70.0,
+    #         'technique': 65.0
+    #     }
         
-        global_score = self._calculate_global_score(quality_metrics)
+    #     global_score = self._calculate_global_score(quality_metrics)
         
-        return {
-            'pose_name': 'demo_pose',
-            'confidence': 0.7,
-            'score': float(global_score),
-            'level': self._get_level(global_score),
-            'angles': angles,
-            'quality_metrics': quality_metrics,
-            'feedback': ['Mode démonstration - Entraînez le modèle ML pour de meilleurs résultats'],
-            'strengths': ['🎯 Symétrie: Correct (82%)'],
-            'improvements': ['📝 Stabilité: Travaillez votre équilibre (68%)'],
-            'priority_feedback': ['💡 Priorité: Renforcez votre stabilité en engageant les abdominaux'],
-            'exercise_recommendation': {
-                'name': "Posture de la montagne",
-                'description': "Exercice de base pour améliorer la stabilité",
-                'duration': "3 minutes",
-                'benefit': "Renforcement de l'équilibre"
-            },
-            'keypoints': keypoints,
-            'model_type': 'demo'
-        }
+    #     return {
+    #         'pose_name': 'demo_pose',
+    #         'confidence': 0.7,
+    #         'score': float(global_score),
+    #         'level': self._get_level(global_score),
+    #         'angles': angles,
+    #         'quality_metrics': quality_metrics,
+    #         'feedback': ['Mode démonstration - Entraînez le modèle ML pour de meilleurs résultats'],
+    #         'strengths': ['🎯 Symétrie: Correct (82%)'],
+    #         'improvements': ['📝 Stabilité: Travaillez votre équilibre (68%)'],
+    #         'priority_feedback': ['💡 Priorité: Renforcez votre stabilité en engageant les abdominaux'],
+    #         'exercise_recommendation': {
+    #             'name': "Posture de la montagne",
+    #             'description': "Exercice de base pour améliorer la stabilité",
+    #             'duration': "3 minutes",
+    #             'benefit': "Renforcement de l'équilibre"
+    #         },
+    #         'keypoints': keypoints,
+    #         'model_type': 'demo'
+    #     }

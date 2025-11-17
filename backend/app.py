@@ -5,6 +5,7 @@ import uuid
 import base64
 from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
+from bson import ObjectId
 
 # Configuration pour réduire les logs
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -539,6 +540,28 @@ def calculate_current_streak(history):
             break
     
     return streak
+
+@app.route('/api/user/history', methods=['DELETE'])
+@login_required
+def clear_user_history(user):
+    """Supprime tout l'historique de l'utilisateur"""
+    try:
+        user_id = str(user['_id'])
+        
+        # Mettre à jour l'utilisateur pour vider l'historique
+        db.users.update_one(
+            # {'_id': ObjectId(user_id)},
+            {'_id': ObjectId(user_id)},  
+            {'$set': {'posture_history': []}}
+        )
+        
+        return jsonify({
+            'message': 'Historique supprimé avec succès',
+            'deleted_count': len(user.get('posture_history', []))
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("🚀 Démarrage de l'application Yoga Pose Analyzer...")
