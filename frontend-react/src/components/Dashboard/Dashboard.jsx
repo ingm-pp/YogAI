@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { userAPI } from '../../services/api'
+import { ClearHistoryModal } from '../ClearHistory/ClearHistory'
 import './Dashboard.css'
 
 export function Dashboard() {
@@ -7,6 +8,8 @@ export function Dashboard() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showClearModal, setShowClearModal] = useState(false)
+  const [clearLoading, setClearLoading] = useState(false)
 
   useEffect(() => {
     fetchUserData()
@@ -51,6 +54,16 @@ export function Dashboard() {
     return icons[poseName] || '🧘'
   }
 
+  const handleClearClick = () => {
+    setShowClearModal(true)
+  }
+
+  const handleClearConfirm = async () => {
+    // Logique de suppression...
+    await userAPI.clearHistory()
+    setShowClearModal(false)
+  }
+
   if (loading) {
     return (
       <div className="dashboard-loading">
@@ -70,6 +83,8 @@ export function Dashboard() {
       </div>
     )
   }
+
+
 
   return (
     <div className="dashboard">
@@ -175,6 +190,23 @@ export function Dashboard() {
           </div>
         )}
       </div>
+      {/* Bouton pour ouvrir la modal */}
+      {history.length > 0 && (
+        <div className="history-actions">
+          <button onClick={handleClearClick} className="btn-danger">
+            🗑️ Effacer l'historique
+          </button>
+        </div>
+      )}
+
+      {/* Modal de confirmation */}
+      <ClearHistoryModal 
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={handleClearConfirm}
+        loading={clearLoading}
+      />
+
     </div>
   )
 }

@@ -104,6 +104,7 @@ export function AnalysisResults({
         </div>
 
         <div className="score-section">
+          <h3>score d'éxécution: </h3>
           <div className="score-circle" style={{ '--score-percent': `${result.score || 0}%` }}>
             <div className="score-inner">
               {Math.round(result.score || 0)}%
@@ -112,7 +113,7 @@ export function AnalysisResults({
           <h2 className="pose-name">
             {formatPoseName(result.pose_name)}
             <span className={`level-badge ${getLevelClass(result.level)}`}>
-              {result.level || 'Débutant'}
+              Niveau: {result.level || 'Débutant'}
             </span>
           </h2>
           <p className="confidence">
@@ -131,7 +132,6 @@ export function AnalysisResults({
         </div>
       </div>
 
-      {/* [Garder le reste du code existant...] */}
       {result.quality_metrics && (
         <div className="quality-metrics">
           <h3>📊 Analyse Détaillée de la Posture</h3>

@@ -27,7 +27,7 @@ export function MediaDisplay({
 
     const drawPoseConnections = (ctx, keypoints, width, height) => {
       ctx.strokeStyle = '#00FF00'
-      ctx.lineWidth = 3
+      ctx.lineWidth = 2
       ctx.lineCap = 'round'
 
       POSE_CONNECTIONS.forEach(([start, end]) => {
@@ -53,13 +53,13 @@ export function MediaDisplay({
           
           // Point intérieur rouge
           ctx.beginPath()
-          ctx.arc(x, y, 4, 0, 2 * Math.PI)
+          ctx.arc(x, y, 2, 0, 2 * Math.PI)
           ctx.fillStyle = '#FF0000'
           ctx.fill()
           
           // Bordure blanche
           ctx.strokeStyle = '#FFFFFF'
-          ctx.lineWidth = 1
+          ctx.lineWidth = 0.5
           ctx.stroke()
         }
       })

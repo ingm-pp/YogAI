@@ -171,6 +171,35 @@
   border: 2px solid #e9ecef;
 }
 
+
+/* Styles pour le bouton de suppression */
+.history-actions {
+  text-align: center;
+  margin: 3rem 0 2rem 0; /* ← AJOUT DE MARGES IMPORTANTES */
+  padding: 1.5rem; /* ← LÉGÈREMENT PLUS DE PADDING */
+  background: #fff8f8;
+  border-radius: 12px;
+  border: 2px dashed #ffebee;
+}
+
+/* OU plus spécifiquement */
+.history-actions {
+  margin-top: 3rem;     /* ← Espace au-dessus du bouton */
+  margin-bottom: 2rem;  /* ← Espace en-dessous du bouton */
+  text-align: center;
+  padding: 1.5rem;
+  background: #fff8f8;
+  border-radius: 12px;
+  border: 2px dashed #ffebee;
+}
+
+.btn-secondary {
+    background-color: #f3f043; /* Couleur de fond visible */
+    color: rgb(180, 30, 30); /* Texte contrastant */
+    border: 2px solid #47a9ff; /* Bordure de la même couleur */
+}
+
+
 /* Responsive */
 @media (max-width: 768px) {
   .dashboard {

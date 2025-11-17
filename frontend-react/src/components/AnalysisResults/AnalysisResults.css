@@ -112,11 +112,12 @@
   line-height: 1.5;
 }
 
-/* Métriques de qualité */
 
 /* Métriques de qualité - Version horizontale compacte */
 .quality-metrics {
   margin-bottom: 2rem;
+  text-align: center; /* ← Centrer le titre */
+  width: 100%; /* ← S'assurer que le conteneur prend toute la largeur */
 }
 
 .quality-metrics h3 {
@@ -124,12 +125,14 @@
   margin-bottom: 1.5rem;
   text-align: center;
   font-size: 1.3rem;
+  width: 100%; /* ← S'assurer qu'il prend toute la largeur */
 }
 
 .metrics-grid-horizontal {
   display: grid;
   grid-template-columns: repeat(5, 1fr); /* ← 5 colonnes fixes */
   gap: 0.8rem;
+  width: 100%; /* ← Prendre toute la largeur disponible */
 }
 
 .metric-card {
